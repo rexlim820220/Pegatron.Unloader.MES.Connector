@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using Models.AAS;
+using System.Text;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -22,6 +24,20 @@ namespace Pegatron.Unloader.MES.Connector
             _baseUrl = baseUrl.TrimEnd('/');
         }
 
+        private async Task<TRes> ExecuteAasAsync<TReq, TRes>(string serviceName, TReq data) where TRes : AasBaseResponse, new()
+        {
+            try
+            {
+                var payload = new { service_name = serviceName, request_data = data };
+                string json = await InternalPostAsync("/api/v1/aas/dispatch", payload, false);
+                return JsonConvert.DeserializeObject<TRes>(json);
+            }
+            catch (Exception ex)
+            {
+                return AasBaseResponse.CreateError<TRes>(serviceName, ex.Message);
+            }
+        }
+
         private async Task<string> InternalPostAsync(string path, object payload, bool isMvix = false)
         {
             var json = JsonConvert.SerializeObject(payload);
@@ -34,9 +50,32 @@ namespace Pegatron.Unloader.MES.Connector
             }
 
             var response = await _client.PostAsync($"{_baseUrl}{path}", content);
+            response.EnsureSuccessStatusCode();
+
             return await response.Content.ReadAsStringAsync();
         }
 
+        // --- 公開方法 (Caller 呼叫區) ---
 
+        public async Task<CheckLoaderResponse> CheckLoaderAsync(CheckLoaderRequest data)
+        {
+            try
+            {
+                var payload = new
+                {
+                    service_name = "CheckLoader",
+                    request_data = data
+                };
+                string json = await InternalPostAsync("/api/v1/aas/dispatch", payload);
+                return JsonConvert.DeserializeObject<CheckLoaderResponse>(json);
+            }
+            catch (Exception ex)
+            {
+                return AasBaseResponse.CreateError<CheckLoaderResponse>("CheckLoader", ex.Message);
+            }
+        }
+
+        public async Task<UploadData> UploadDataAsync(UploadData data)
+             => await ExecuteAasAsync<UploadData, UploadData>("UploadData", data);
     }
 }

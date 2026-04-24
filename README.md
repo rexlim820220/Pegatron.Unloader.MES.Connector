@@ -2,7 +2,7 @@
 
 本專案為開發給景碩 (Kinsus) VCP 設備使用的 .NET 通訊組件 (DLL)，旨在簡化設備資料上報至 AULink (SFIS) 系統的流程。透過封裝 AAS 與 MVIX 兩種通訊格式，提供統一且高可靠性的調用接口。
 
-## 🚀 核心功能 (Key Features)
+## 核心功能 (Key Features)
 
 * 雙格式支援：完整封裝 AAS 上拋格式與 MVIX 上拋格式。
 * 高相容性：採用 .NET Standard 2.0 開發，支援舊版 .NET Framework 4.5.2
@@ -17,7 +17,7 @@
 
 特點： 需包含 apiKey 認證，且判斷邏輯較單純（只看 status）。
 
-```
+```mermaid
 sequenceDiagram
     participant M as 冠穎程序 (Caller)
     participant DLL as .NET DLL (Connector)
@@ -54,7 +54,7 @@ sequenceDiagram
 
 特點： 單一入口 (dispatch)，且需進行「兩段式」成功判定（status 與 result）。
 
-```
+```mermaid
 sequenceDiagram
     participant M as 冠穎程序 (Caller)
     participant DLL as .NET DLL (Connector)

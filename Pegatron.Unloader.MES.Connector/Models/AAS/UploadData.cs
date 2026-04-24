@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Models.AAS
+﻿namespace Models.AAS
 {
-    class UploadData
+    public class UploadData : AasBaseResponse
     {
+        public string PanelID { get; set; }
     }
 }
