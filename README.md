@@ -86,14 +86,14 @@ sequenceDiagram
     end
 ```
 
-## 🛠 技術棧 (Tech Stack)
+## 技術棧 (Tech Stack)
 
 * Language: C# 8.0+
 * Framework: .NET Framework 4.5.2
 * Protocol: HTTP/HTTPS (POST)
 * Data Format: JSON (Newtonsoft.Json)
 
-## 📅 開發進度 (Roadmap)
+## 開發進度 (Roadmap)
 
 * Phase 1: 模型建立 (4/25 - 4/28) - 8 項服務之 JSON Models 定義。
 * Phase 2: 核心開發 (4/29 - 5/2) - HTTP 傳輸邏輯與自動重試機制。
@@ -101,7 +101,7 @@ sequenceDiagram
 * Phase 4: 模擬測試 (5/7 - 5/10) - 使用 Postman 進行全 API 驗證。
 * Phase 5: 交付驗收 (5/11) - 提供 Release DLL 與範例程式。
 
-## 📦 使用範例 (Usage Example)
+## 使用範例 (Usage Example)
 
 ```
 // 初始化服務 (範例)var client = new KinsusVcpClient(config);

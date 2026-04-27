@@ -1,4 +1,4 @@
-﻿namespace Models.MVIX
+namespace Models.MVIX
 {
     public class MvixResponse
     {

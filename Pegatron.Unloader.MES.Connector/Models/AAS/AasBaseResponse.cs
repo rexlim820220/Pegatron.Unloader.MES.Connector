@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Models.AAS
 {
@@ -27,19 +27,15 @@ namespace Models.AAS
         [JsonProperty("result", NullValueHandling = NullValueHandling.Ignore)]
         public object Result { get; set; }
 
-        [JsonProperty("code")]
+        [JsonProperty("code", NullValueHandling = NullValueHandling.Ignore)]
         public string Code { get; set; }
 
-        [JsonProperty("unit")]
+        [JsonProperty("unit", NullValueHandling = NullValueHandling.Ignore)]
         public string Unit { get; set; }
 
-        [JsonProperty("message")]
+        [JsonProperty("message", NullValueHandling = NullValueHandling.Ignore)]
         public string Message { get; set; }
-
-        [JsonProperty("SerialNo")]
-        public string SerialNo { get; set; }
-
-        [JsonProperty("EQName")]
-        public string EqName { get; set; }
+        [JsonIgnore]
+        public bool IsSuccess => Status == "success" && (Result?.ToString() == "1");
     }
 }
