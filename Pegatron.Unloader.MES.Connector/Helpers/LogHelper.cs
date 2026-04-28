@@ -9,24 +9,6 @@ namespace Pegatron.Unloader.MES.Connector.Helpers
     {
         private static readonly string LogFolder = Path.Combine(Path.GetTempPath(), "PegatronMESConnector");
 
-        public static void WriteLog(string serviceName, string request, string response)
-        {
-            try
-            {
-                if (!Directory.Exists(LogFolder)) Directory.CreateDirectory(LogFolder);
-
-                string filePath = Path.Combine(LogFolder, $"Log_{DateTime.Now:yyyyMMdd}.txt");
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Service: {serviceName}");
-                sb.AppendLine($"Request: {request}");
-                sb.AppendLine($"Response: {response}");
-                sb.AppendLine(new string('-', 50));
-
-                File.AppendAllText(filePath, sb.ToString(), Encoding.UTF8);
-            }
-            catch { }
-        }
-
         public static void WriteWarning(string message)
         {
             try

@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Models.AAS
+namespace Pegatron.Unloader.MES.Connector
 {
     public class ChangeEQStatus : AasBaseResponse
     {
@@ -17,7 +17,7 @@ namespace Models.AAS
         /// <summary>
         /// 狀態代號。範例：1,2,3…
         /// </summary>
-        [JsonProperty("status")]
+        [JsonProperty("Status")]
         public string StatusReq { get; set; }
         /// <summary>
         /// 片子的編號。

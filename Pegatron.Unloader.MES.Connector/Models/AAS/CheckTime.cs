@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Models.AAS
+namespace Pegatron.Unloader.MES.Connector
 {
     public class CheckTime : AasBaseResponse
     {
@@ -14,10 +14,5 @@ namespace Models.AAS
         /// </summary>
         [JsonProperty("EQName")]
         public string EQName { get; set; }
-        /// <summary>
-        /// 現在時間。
-        /// </summary>
-        [JsonProperty("Time")]
-        public string Time { get; set; }
     }
 }

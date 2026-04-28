@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Models.AAS
+namespace Pegatron.Unloader.MES.Connector
 {
     public class ChangeEQMode : AasBaseResponse
     {

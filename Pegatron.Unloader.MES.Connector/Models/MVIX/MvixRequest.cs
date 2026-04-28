@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Models.MVIX
+namespace Pegatron.Unloader.MES.Connector
 {
     public class MvixRequest
     {

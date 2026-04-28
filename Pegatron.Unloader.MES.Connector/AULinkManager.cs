@@ -1,6 +1,4 @@
 using System;
-using Models.AAS;
-using Models.MVIX;
 using System.Text;
 using Newtonsoft.Json;
 using System.Net.Http;
@@ -17,10 +15,13 @@ namespace Pegatron.Unloader.MES.Connector
 
         static AULinkManager()
         {
-            System.Net.ServicePointManager.SecurityProtocol = (System.Net.SecurityProtocolType)3072;
+            System.Net.ServicePointManager.SecurityProtocol =
+            System.Net.SecurityProtocolType.Tls12 | (System.Net.SecurityProtocolType)12288;
             System.Net.WebRequest.DefaultWebProxy.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
-            _client = new HttpClient();
-            _client.Timeout = TimeSpan.FromSeconds(8);
+            _client = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(8)
+            };
         }
 
         public AULinkManager(string baseUrl)

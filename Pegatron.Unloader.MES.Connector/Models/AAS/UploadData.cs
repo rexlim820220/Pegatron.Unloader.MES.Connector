@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Models.AAS
+namespace Pegatron.Unloader.MES.Connector
 {
     public class UploadData : AasBaseResponse
     {

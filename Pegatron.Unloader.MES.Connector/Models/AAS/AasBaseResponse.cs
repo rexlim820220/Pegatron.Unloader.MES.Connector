@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Models.AAS
+namespace Pegatron.Unloader.MES.Connector
 {
     public class AasBaseResponse
     {
@@ -10,19 +10,19 @@ namespace Models.AAS
             {
                 ServiceName = serviceName,
                 Status = "error",
-                Result = "1",
+                Result = "0",
                 Message = $"[DLL_INTERNAL_ERROR] {errorMessage}"
             };
         }
 
-        [JsonProperty("service_name")]
+        [JsonProperty("service_name", NullValueHandling = NullValueHandling.Ignore)]
         public string ServiceName { get; set; }
 
         [JsonProperty("status", NullValueHandling = NullValueHandling.Ignore)]
         public string Status { get; set; }
 
         /// <summary>
-        /// 服務處理結果: 0 (success), 1 (failure), 2 (warning)
+        /// 服務處理結果: 1 (成功), 2 (業務失敗/警告), 0 (系統例外/資料缺失)
         /// </summary>
         [JsonProperty("result", NullValueHandling = NullValueHandling.Ignore)]
         public object Result { get; set; }
@@ -37,5 +37,15 @@ namespace Models.AAS
         public string Message { get; set; }
         [JsonIgnore]
         public bool IsSuccess => Status == "success" && (Result?.ToString() == "1");
+        [JsonIgnore]
+        public string ResultType
+        {
+            get
+            {
+                if (IsSuccess) return "Success";
+                if (Result?.ToString() == "2") return "Warning/BusinessFail";
+                return "SystemError/Exception";
+            }
+        }
     }
 }

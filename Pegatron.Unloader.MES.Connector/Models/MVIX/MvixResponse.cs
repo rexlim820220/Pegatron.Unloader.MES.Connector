@@ -1,4 +1,4 @@
-namespace Models.MVIX
+namespace Pegatron.Unloader.MES.Connector
 {
     public class MvixResponse
     {
