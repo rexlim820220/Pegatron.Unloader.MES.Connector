@@ -10,23 +10,26 @@ namespace Pegatron.Unloader.MES.Connector
     public class AULinkManager
     {
         private readonly string _baseUrl;
+        private readonly string _apiKey;
         private static readonly HttpClient _client;
-        private const string ApiKey = "433576dd-1489-44e5-b19c-baa9c9463de";
 
         static AULinkManager()
         {
+            var config = ConfigHelper.GetConfig();
             System.Net.ServicePointManager.SecurityProtocol =
             System.Net.SecurityProtocolType.Tls12 | (System.Net.SecurityProtocolType)12288;
             System.Net.WebRequest.DefaultWebProxy.Credentials = System.Net.CredentialCache.DefaultNetworkCredentials;
             _client = new HttpClient
             {
-                Timeout = TimeSpan.FromSeconds(8)
+                Timeout = TimeSpan.FromSeconds(config.TimeoutSeconds)
             };
         }
 
-        public AULinkManager(string baseUrl)
+        public AULinkManager()
         {
-            _baseUrl = baseUrl.TrimEnd('/');
+            var config = ConfigHelper.GetConfig();
+            _baseUrl = config.BaseUrl.TrimEnd('/');
+            _apiKey = config.ApiKey;
         }
 
         private async Task<string> InternalPostAsync(string path, object payload, bool isMvix = false)
@@ -37,7 +40,7 @@ namespace Pegatron.Unloader.MES.Connector
             _client.DefaultRequestHeaders.Remove("apiKey");
             if (isMvix)
             {
-                _client.DefaultRequestHeaders.Add("apiKey", ApiKey);
+                _client.DefaultRequestHeaders.Add("apiKey", _apiKey );
             }
 
             var response = await _client.PostAsync($"{_baseUrl}{path}", content);
@@ -48,34 +51,53 @@ namespace Pegatron.Unloader.MES.Connector
 
         private async Task<TRes> ExecuteAasAsync<TReq, TRes>(string serviceName, TReq data) where TRes : AasBaseResponse, new()
         {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            string json;
+
             try
             {
                 var payload = new { service_name = serviceName, request_data = data };
-                string json = await InternalPostAsync("/api/v1/aas/dispatch", payload, false);
+                json = await InternalPostAsync("/api/v1/aas/dispatch", payload, false);
                 var result = JsonConvert.DeserializeObject<TRes>(json);
 
+                sw.Stop();
                 if (result.ServiceName != serviceName && !string.IsNullOrEmpty(result.ServiceName))
                 {
                     LogHelper.WriteWarning($"Service Name Mismatch: Req={serviceName}, Res={result.ServiceName}");
                 }
+                LogHelper.WriteLog(serviceName, json, json, sw.ElapsedMilliseconds);
+
                 result.ServiceName = serviceName;
                 return result;
             }
             catch (Exception ex)
             {
+                sw.Stop();
+                json = $"Exception: {ex.Message}";
+                LogHelper.WriteLog(serviceName, json, json, sw.ElapsedMilliseconds);
                 return AasBaseResponse.CreateError<TRes>(serviceName, ex.Message);
             }
         }
 
         private async Task<MvixResponse> ExecuteMvixAsync(MvixRequest data)
         {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            string resJson = JsonConvert.SerializeObject(data);
             try
             {
-                string json = await InternalPostAsync("/api/v1/mvix/dispatch", data, true);
-                return JsonConvert.DeserializeObject<MvixResponse>(json);
+                resJson = await InternalPostAsync("/api/v1/mvix/dispatch", data, true);
+                var result = JsonConvert.DeserializeObject<MvixResponse>(resJson);
+
+                sw.Stop();
+                _ = Task.Run(() => LogHelper.WriteLog($"MVIX", resJson, resJson, sw.ElapsedMilliseconds));
+
+                return result;
             }
             catch (Exception ex)
             {
+                sw.Stop();
+                resJson = $"[Exception] {ex.Message}";
+                _ = Task.Run(() => LogHelper.WriteLog($"MVIX", resJson, resJson, sw.ElapsedMilliseconds));
                 return new MvixResponse { Status = "error", Message = ex.Message };
             }
         }
@@ -86,6 +108,8 @@ namespace Pegatron.Unloader.MES.Connector
 
         public async Task<UploadRecipe> UploadRecipeAsync(string clientIp, UploadRecipe data)
         {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            string json;
             try
             {
                 var payload = new
@@ -95,11 +119,15 @@ namespace Pegatron.Unloader.MES.Connector
                     request_data = data
                 };
 
-                string json = await InternalPostAsync("/api/v1/aas/dispatch", payload, false);
-                return JsonConvert.DeserializeObject<UploadRecipe>(json);
+                json = await InternalPostAsync("/api/v1/aas/dispatch", payload, false);
+                var result = JsonConvert.DeserializeObject<UploadRecipe>(json);
+                return result;
             }
             catch (Exception ex)
             {
+                sw.Stop();
+                json = $"[Exception] {ex.Message}";
+                LogHelper.WriteLog("UploadRecipe", json, json, sw.ElapsedMilliseconds);
                 return AasBaseResponse.CreateError<UploadRecipe>("UploadRecipe", ex.Message);
             }
         }

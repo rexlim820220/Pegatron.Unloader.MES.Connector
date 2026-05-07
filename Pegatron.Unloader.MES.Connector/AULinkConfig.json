@@ -1,0 +1,15 @@
+{
+    "BaseUrl": "https://f495e576-c186-499a-96a8-f6e0c6c6b298.mock.pstmn.io",
+    "ApiKey": "433576dd-1489-44e5-b19c-baa9c9463de",
+    "TimeoutSeconds": 8,
+    "IsMockMode": true,
+    "ServiceSwitches": {
+        "EnableEqStatus": true,
+        "EnableRecipe": true,
+        "EnableLotCheck": true
+    },
+    "MappingIDs": {
+        "DefaultTempID": "1782",
+        "DefaultPressureID": "1783"
+    }
+}
