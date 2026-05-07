@@ -1,5 +1,6 @@
 {
     "BaseUrl": "https://f495e576-c186-499a-96a8-f6e0c6c6b298.mock.pstmn.io",
+    "EqId": "MEC_AP-51101-2",
     "ApiKey": "433576dd-1489-44e5-b19c-baa9c9463de",
     "TimeoutSeconds": 8,
     "IsMockMode": true,

@@ -102,6 +102,11 @@ namespace Pegatron.Unloader.MES.Connector
             }
         }
 
+        public string GetFallbackPanelId(string lotId, int sequence)
+        {
+            return $"{lotId}E{sequence:D2}";
+        }
+
         // --- AAS 的入口 ---
         public async Task<ChangeEQStatus> ChangeEQStatusAsync(ChangeEQStatus data)
             => await ExecuteAasAsync<ChangeEQStatus, ChangeEQStatus>("ChangeEQStatus", data);
@@ -135,8 +140,16 @@ namespace Pegatron.Unloader.MES.Connector
         public async Task<CheckLoader> CheckLoaderAsync(CheckLoader data)
             => await ExecuteAasAsync<CheckLoader, CheckLoader>("CheckLoader", data);
 
-        public async Task<CheckPanel> CheckPanelAsync(CheckPanel data)
-            => await ExecuteAasAsync<CheckPanel, CheckPanel>("CheckPanel", data);
+        public async Task<CheckPanel> CheckPanelAsync(CheckPanel data, int sequence = 1)
+        {
+            if (string.IsNullOrWhiteSpace(data.PanelID) || data.PanelID.ToUpper() == "FAIL")
+            {
+                data.PanelID = GetFallbackPanelId(data.Lot, sequence);
+                LogHelper.WriteWarning($"PanelID Read Fail, auto-generated: {data.PanelID}");
+            }
+
+            return await ExecuteAasAsync<CheckPanel, CheckPanel>("CheckPanel", data);
+        }
 
         public async Task<UploadData> UploadDataAsync(UploadData data)
             => await ExecuteAasAsync<UploadData, UploadData>("UploadData", data);
@@ -145,7 +158,23 @@ namespace Pegatron.Unloader.MES.Connector
             => await ExecuteAasAsync<UploadEventCode, UploadEventCode>("UploadEventCode", data);
 
         public async Task<CheckTime> CheckTimeAsync(CheckTime data)
-            => await ExecuteAasAsync<CheckTime, CheckTime>("CheckTime", data);
+        {
+            var result = await ExecuteAasAsync<CheckTime, CheckTime>("CheckTime", data);
+
+            if (result != null && !string.IsNullOrEmpty(result.SystemTime))
+            {
+                if (DateTime.TryParse(result.SystemTime, out DateTime serverTime))
+                {
+                    bool isSuccess = DateTimeHelper.SyncSystemTime(serverTime);
+                    LogHelper.WriteLog("SystemTimeSync", $"Sync Status: {isSuccess}", result.SystemTime, 0);
+                }
+                else
+                {
+                    LogHelper.WriteWarning($"Time Format Error: {result.SystemTime}");
+                }
+            }
+            return result;
+        }
 
         public async Task<ChangeEQMode> ChangeEQModeAsync(ChangeEQMode data)
             => await ExecuteAasAsync<ChangeEQMode, ChangeEQMode>("ChangeEQMode", data);

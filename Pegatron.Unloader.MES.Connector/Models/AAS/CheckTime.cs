@@ -14,5 +14,7 @@ namespace Pegatron.Unloader.MES.Connector
         /// </summary>
         [JsonProperty("EQName")]
         public string EQName { get; set; }
+        [JsonProperty("Time")]
+        public string SystemTime { get; set; }
     }
 }
