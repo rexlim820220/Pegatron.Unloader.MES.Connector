@@ -167,24 +167,33 @@ namespace Pegatron.Unloader.MES.Connector
 
         public async Task<UploadData> UploadDataAsync(UploadData data)
         {
-            if (string.IsNullOrEmpty(data.EQName))
+            try
             {
-                data.EQName = _config.EqId;
-            }
+                data.EQName = data.EQName ?? _config.EqId;
 
-            foreach (var item in data.Data)
-            {
-                if (string.IsNullOrEmpty(item.Key))
+                if (_config.MappingIDs != null && data.Data != null)
                 {
-                    if (_config.MappingIDs != null && _config.MappingIDs.ContainsKey("DefaultTempID"))
+                    foreach (var item in data.Data)
                     {
-                        item.Key = _config.MappingIDs["DefaultTempID"];
+                        if (string.IsNullOrEmpty(item.Key) && _config.MappingIDs.ContainsKey("DefaultTempID"))
+                        {
+                            item.Key = _config.MappingIDs["DefaultTempID"];
+                        }
                     }
                 }
+                return await ExecuteAasAsync<UploadData, UploadData>("UploadData", data);
             }
-
-            return await ExecuteAasAsync<UploadData, UploadData>("UploadData", data);
+            catch (TaskCanceledException)
+            {
+                LogHelper.WriteWarning("UploadData Timeout! Consider increasing TimeoutSeconds in config.");
+                return AasBaseResponse.CreateError<UploadData>("UploadData", "TIMEOUT");
+            }
+            catch (Exception ex)
+            {
+                return AasBaseResponse.CreateError<UploadData>("UploadData", $"Internal: {ex.Message}");
+            }
         }
+
 
         public async Task<UploadEventCode> UploadEventCodeAsync(UploadEventCode data)
             => await ExecuteAasAsync<UploadEventCode, UploadEventCode>("UploadEventCode", data);
