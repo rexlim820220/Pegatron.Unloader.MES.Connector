@@ -12,6 +12,7 @@ namespace Pegatron.Unloader.MES.Connector
         private readonly string _baseUrl;
         private readonly string _apiKey;
         private static readonly HttpClient _client;
+        private readonly ConfigModel _config;
 
         static AULinkManager()
         {
@@ -27,15 +28,21 @@ namespace Pegatron.Unloader.MES.Connector
 
         public AULinkManager()
         {
-            var config = ConfigHelper.GetConfig();
-            _baseUrl = config.BaseUrl.TrimEnd('/');
-            _apiKey = config.ApiKey;
+            _config = ConfigHelper.GetConfig();
+            _baseUrl = _config.BaseUrl.TrimEnd('/');
+            _apiKey = _config.ApiKey;
         }
 
         private async Task<string> InternalPostAsync(string path, object payload, bool isMvix = false)
         {
             var json = JsonConvert.SerializeObject(payload);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            if (_config.IsMockMode)
+            {
+                await Task.Delay(100);
+                return "{\"result\": \"OK\", \"service_name\": \"MockMode\"}";
+            }
 
             _client.DefaultRequestHeaders.Remove("apiKey");
             if (isMvix)
@@ -138,7 +145,14 @@ namespace Pegatron.Unloader.MES.Connector
         }
 
         public async Task<CheckLoader> CheckLoaderAsync(CheckLoader data)
-            => await ExecuteAasAsync<CheckLoader, CheckLoader>("CheckLoader", data);
+        {
+            if (!_config.ServiceSwitches.EnableLotCheck)
+            {
+                LogHelper.WriteWarning("CheckLoader (LotCheck) is disabled by config.");
+                return new CheckLoader { Result = "SKIP" };
+            }
+            return await ExecuteAasAsync<CheckLoader, CheckLoader>("CheckLoader", data);
+        }
 
         public async Task<CheckPanel> CheckPanelAsync(CheckPanel data, int sequence = 1)
         {
@@ -152,7 +166,25 @@ namespace Pegatron.Unloader.MES.Connector
         }
 
         public async Task<UploadData> UploadDataAsync(UploadData data)
-            => await ExecuteAasAsync<UploadData, UploadData>("UploadData", data);
+        {
+            if (string.IsNullOrEmpty(data.EQName))
+            {
+                data.EQName = _config.EqId;
+            }
+
+            foreach (var item in data.Data)
+            {
+                if (string.IsNullOrEmpty(item.Key))
+                {
+                    if (_config.MappingIDs != null && _config.MappingIDs.ContainsKey("DefaultTempID"))
+                    {
+                        item.Key = _config.MappingIDs["DefaultTempID"];
+                    }
+                }
+            }
+
+            return await ExecuteAasAsync<UploadData, UploadData>("UploadData", data);
+        }
 
         public async Task<UploadEventCode> UploadEventCodeAsync(UploadEventCode data)
             => await ExecuteAasAsync<UploadEventCode, UploadEventCode>("UploadEventCode", data);

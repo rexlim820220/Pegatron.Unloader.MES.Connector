@@ -8,6 +8,7 @@ namespace Pegatron.Unloader.MES.Connector.Helpers
     public class ConfigModel
     {
         public string BaseUrl { get; set; }
+        public string EqId { get; set; }
         public string ApiKey { get; set; }
         public int TimeoutSeconds { get; set; }
         public bool IsMockMode { get; set; }
