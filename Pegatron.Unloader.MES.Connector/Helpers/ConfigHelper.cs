@@ -35,26 +35,36 @@ namespace Pegatron.Unloader.MES.Connector.Helpers
         {
             if (_currentConfig != null) return _currentConfig;
 
+            if (!File.Exists(ConfigPath))
+            {
+                throw new FileNotFoundException(
+                    "【嚴重錯誤】找不到設定檔！\n" +
+                    "請確認 AULinkConfig.json 存在於執行目錄中。\n" +
+                    "目前掃描路徑為：" + ConfigPath + "\n" +
+                    "提示：請檢查專案中 JSON 檔的『複製到輸出目錄』是否設為『一律複製』。"
+                );
+            }
+
             try
             {
-                if (File.Exists(ConfigPath))
+                string json = File.ReadAllText(ConfigPath);
+                _currentConfig = JsonConvert.DeserializeObject<ConfigModel>(json);
+
+                if (_currentConfig == null)
                 {
-                    string json = File.ReadAllText(ConfigPath);
-                    _currentConfig = JsonConvert.DeserializeObject<ConfigModel>(json);
+                    throw new Exception("JSON 解析結果為 null，請檢查格式是否符合 ConfigModel。");
                 }
-                else
+
+                if (string.IsNullOrEmpty(_currentConfig.BaseUrl))
                 {
-                    _currentConfig = new ConfigModel
-                    {
-                        BaseUrl = "http://localhost",
-                        TimeoutSeconds = 10
-                    };
+                    throw new Exception("設定檔內容錯誤：BaseUrl 不可為空。");
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                _currentConfig = new ConfigModel { BaseUrl = "http://localhost", TimeoutSeconds = 10 };
+                throw new Exception("讀取 AULinkConfig.json 時發生異常：" + ex.Message);
             }
+
             return _currentConfig;
         }
     }

@@ -96,7 +96,7 @@ namespace Pegatron.Unloader.MES.Connector
                 var result = JsonConvert.DeserializeObject<MvixResponse>(resJson);
 
                 sw.Stop();
-                _ = Task.Run(() => LogHelper.WriteLog($"MVIX", resJson, resJson, sw.ElapsedMilliseconds));
+                Task.Run(() => LogHelper.WriteLog("MVIX", resJson, resJson, sw.ElapsedMilliseconds));
 
                 return result;
             }
@@ -104,7 +104,7 @@ namespace Pegatron.Unloader.MES.Connector
             {
                 sw.Stop();
                 resJson = $"[Exception] {ex.Message}";
-                _ = Task.Run(() => LogHelper.WriteLog($"MVIX", resJson, resJson, sw.ElapsedMilliseconds));
+                Task.Run(() => LogHelper.WriteLog("MVIX", resJson, resJson, sw.ElapsedMilliseconds));
                 return new MvixResponse { Status = "error", Message = ex.Message };
             }
         }
@@ -204,7 +204,8 @@ namespace Pegatron.Unloader.MES.Connector
 
             if (result != null && !string.IsNullOrEmpty(result.SystemTime))
             {
-                if (DateTime.TryParse(result.SystemTime, out DateTime serverTime))
+                DateTime serverTime;
+                if (DateTime.TryParse(result.SystemTime, out serverTime))
                 {
                     bool isSuccess = DateTimeHelper.SyncSystemTime(serverTime);
                     LogHelper.WriteLog("SystemTimeSync", $"Sync Status: {isSuccess}", result.SystemTime, 0);
